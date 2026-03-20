@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI GRADE 評讀工具</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500&family=JetBrains+Mono:wght@400;600&display=swap');
+:root{
+  --bg:#080c14;--bg2:#0e1520;--bg3:#141d2e;--bg4:#1a2438;
+  --border:rgba(80,120,200,0.15);--border2:rgba(80,120,200,0.3);
+  --text:#dde3f0;--text2:#8a97b5;--text3:#4a5470;
+  --accent:#3d7aff;--accent2:#6b9fff;--accent3:#a8c4ff;
+  --high:#00d4a0;--mod:#f0c040;--low:#ff8040;--vlow:#ff3d6b;
+  --glow:rgba(61,122,255,0.15);
+  --serif:'Noto Serif TC',serif;--sans:'Noto Sans TC',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;font-size:14px;line-height:1.7;overflow-x:hidden}
+
+/* Background grid */
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(61,122,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(61,122,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+
+/* Header */
+header{position:relative;z-index:10;padding:32px 40px 28px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(8,12,20,0.98) 0%,rgba(14,21,32,0.95) 100%);backdrop-filter:blur(20px)}
+.header-inner{max-width:860px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.logo{display:flex;align-items:center;gap:14px}
+.logo-mark{width:40px;height:40px;border:1.5px solid var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.05em;position:relative;overflow:hidden}
+.logo-mark::before{content:'';position:absolute;inset:0;background:var(--glow)}
+.logo-text h1{font-family:var(--serif);font-size:18px;font-weight:700;color:#fff;letter-spacing:.02em}
+.logo-text p{font-size:10px;color:var(--text3);margin-top:1px;letter-spacing:.08em;text-transform:uppercase}
+.header-badge{font-family:var(--mono);font-size:10px;color:var(--accent2);background:rgba(61,122,255,0.1);border:1px solid rgba(61,122,255,0.2);border-radius:20px;padding:4px 12px;letter-spacing:.05em}
+
+/* Main */
+.main{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:32px 20px 80px}
+
+/* Upload zone */
+.upload-zone{
+  border:1.5px dashed var(--border2);border-radius:16px;
+  padding:0;background:var(--bg2);
+  transition:all .3s;cursor:pointer;overflow:hidden;
+  margin-bottom:20px;
+}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(61,122,255,0.05)}
+.upload-inner{padding:40px 32px;text-align:center}
+.upload-icon{font-size:36px;margin-bottom:12px;opacity:.6}
+.upload-title{font-family:var(--serif);font-size:16px;color:var(--text);margin-bottom:6px}
+.upload-hint{font-size:11px;color:var(--text3);line-height:1.6}
+.upload-btn{display:inline-block;margin-top:16px;padding:9px 22px;background:var(--accent);color:white;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s}
+.upload-btn:hover{background:var(--accent2)}
+#fileInput{display:none}
+
+/* Text input area */
+.text-panel{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px}
+.text-panel-header{padding:14px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.text-panel-header span{font-size:11px;color:var(--text2);letter-spacing:.05em}
+.tab-btn{padding:5px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);font-family:var(--sans);font-size:11px;cursor:pointer;transition:all .2s}
+.tab-btn.active{background:var(--accent);border-color:var(--accent);color:white}
+textarea#articleText{
+  width:100%;min-height:200px;max-height:340px;
+  background:transparent;border:none;outline:none;
+  padding:16px 18px;color:var(--text2);
+  font-family:var(--sans);font-size:13px;line-height:1.8;
+  resize:vertical;
+}
+textarea#articleText::placeholder{color:var(--text3)}
+.char-count{padding:8px 18px;font-family:var(--mono);font-size:10px;color:var(--text3);border-top:1px solid var(--border);text-align:right}
+
+/* File preview */
+.file-preview{padding:16px 18px;display:flex;align-items:center;gap:12px}
+.file-icon{width:36px;height:36px;background:rgba(61,122,255,0.1);border:1px solid rgba(61,122,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.file-name{font-size:12px;color:var(--text);font-weight:500}
+.file-size{font-size:10px;color:var(--text3);margin-top:2px}
+.file-remove{margin-left:auto;background:rgba(255,61,107,0.1);border:1px solid rgba(255,61,107,0.2);color:var(--vlow);font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer;transition:all .2s}
+.file-remove:hover{background:rgba(255,61,107,0.2)}
+
+/* Analyze btn */
+.analyze-btn{
+  width:100%;padding:16px;
+  background:linear-gradient(135deg,var(--accent) 0%,#5b4fcc 100%);
+  color:white;border:none;border-radius:12px;
+  font-family:var(--serif);font-size:15px;font-weight:600;
+  cursor:pointer;transition:all .3s;
+  box-shadow:0 4px 24px rgba(61,122,255,0.25);
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  letter-spacing:.03em;margin-bottom:28px;
+  position:relative;overflow:hidden;
+}
+.analyze-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent);transform:translateX(-100%);transition:transform .6s}
+.analyze-btn:hover::before{transform:translateX(100%)}
+.analyze-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(61,122,255,0.4)}
+.analyze-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* Loading */
+.loading-panel{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;margin-bottom:20px}
+.loading-ring{width:48px;height:48px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-steps{display:flex;flex-direction:column;gap:6px;margin-top:16px}
+.loading-step{font-size:11px;color:var(--text3);display:flex;align-items:center;justify-content:center;gap:6px}
+.loading-step.active{color:var(--accent2)}
+.loading-step.done{color:var(--high)}
+.step-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* Result */
+.result-wrap{animation:fadeUp .5s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* Grade card */
+.grade-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:16px}
+.grade-card-header{padding:20px 22px;display:flex;align-items:center;gap:18px;border-bottom:1px solid var(--border)}
+.grade-orb{width:76px;height:76px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;position:relative}
+.grade-orb::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid currentColor;opacity:.2;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.2}50%{transform:scale(1.05);opacity:.4}}
+.orb-label{font-family:var(--mono);font-size:8px;letter-spacing:.1em;opacity:.7}
+.orb-sym{font-size:13px;font-weight:700;margin-top:3px;text-align:center;line-height:1.2;font-family:var(--mono)}
+.g-high{background:rgba(0,212,160,.12);border:1.5px solid var(--high);color:var(--high)}
+.g-mod{background:rgba(240,192,64,.12);border:1.5px solid var(--mod);color:var(--mod)}
+.g-low{background:rgba(255,128,64,.12);border:1.5px solid var(--low);color:var(--low)}
+.g-vlow{background:rgba(255,61,107,.12);border:1.5px solid var(--vlow);color:var(--vlow)}
+.grade-info{flex:1}
+.grade-level{font-family:var(--serif);font-size:22px;font-weight:700}
+.grade-meaning{font-size:12px;color:var(--text2);margin-top:5px;line-height:1.6;max-width:500px}
+.grade-confidence{font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:6px}
+
+/* Score bar */
+.score-bar-wrap{padding:14px 22px;border-bottom:1px solid var(--border)}
+.score-bar{display:flex;height:6px;border-radius:3px;overflow:hidden;gap:2px}
+.sb-seg{flex:1;border-radius:2px;opacity:.35}
+.sb-seg.active{opacity:1}
+.sb-h{background:var(--high)}.sb-m{background:var(--mod)}.sb-l{background:var(--low)}.sb-v{background:var(--vlow)}
+.score-labels{display:flex;justify-content:space-between;margin-top:6px;font-family:var(--mono);font-size:9px;color:var(--text3)}
+
+/* Domain grid */
+.domain-grid{padding:20px 22px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.domain-item{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.domain-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.domain-name{font-size:11px;font-weight:500;color:var(--text2)}
+.domain-badge{font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:10px;font-weight:600}
+.db-ok{background:rgba(0,212,160,.12);color:var(--high);border:1px solid rgba(0,212,160,.25)}
+.db-d1{background:rgba(255,128,64,.12);color:var(--low);border:1px solid rgba(255,128,64,.25)}
+.db-d2{background:rgba(255,61,107,.12);color:var(--vlow);border:1px solid rgba(255,61,107,.25)}
+.db-u{background:rgba(0,212,160,.12);color:var(--high);border:1px solid rgba(0,212,160,.25)}
+.db-na{background:rgba(74,84,112,.15);color:var(--text3);border:1px solid var(--border)}
+.domain-reason{font-size:11px;color:var(--text3);line-height:1.5}
+
+/* Details */
+.details-panel{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:16px}
+.details-section{border-bottom:1px solid var(--border)}
+.details-section:last-child{border-bottom:none}
+.details-header{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .2s}
+.details-header:hover{background:rgba(61,122,255,.04)}
+.details-header-left{display:flex;align-items:center;gap:10px}
+.det-num{font-family:var(--mono);font-size:10px;color:var(--accent);background:rgba(61,122,255,.1);border:1px solid rgba(61,122,255,.2);border-radius:5px;padding:2px 7px}
+.det-title{font-size:13px;font-weight:500}
+.det-badge{font-family:var(--mono);font-size:10px;padding:2px 9px;border-radius:10px}
+.det-chev{color:var(--text3);font-size:11px;transition:transform .25s}
+.details-body{display:none;padding:16px 20px;background:var(--bg3);border-top:1px solid var(--border)}
+.details-body.open{display:block}
+.det-chev.open{transform:rotate(180deg)}
+.evidence-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:10px}
+.evidence-box strong{color:var(--accent3);display:block;margin-bottom:4px;font-size:11px;letter-spacing:.05em;text-transform:uppercase}
+.recommendation-box{background:rgba(61,122,255,.05);border:1px solid rgba(61,122,255,.15);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--accent3);line-height:1.7}
+.recommendation-box strong{display:block;margin-bottom:4px;font-size:11px;letter-spacing:.05em}
+
+/* Summary */
+.summary-panel{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:16px}
+.summary-panel h3{font-family:var(--serif);font-size:14px;color:var(--accent2);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.summary-panel h3::before{content:'';width:3px;height:14px;background:var(--accent);border-radius:2px;display:inline-block}
+.summary-text{font-size:13px;color:var(--text2);line-height:1.9}
+.summary-text strong{color:var(--text)}
+
+/* Btn row */
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.btn{padding:9px 20px;border-radius:8px;border:none;font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px}
+.btn-p{background:var(--accent);color:white}.btn-p:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn-s{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}.btn-s:hover{border-color:var(--border2);color:var(--text)}
+
+/* Disclaimer */
+.disclaimer{background:rgba(240,192,64,.06);border:1px solid rgba(240,192,64,.15);border-radius:10px;padding:12px 16px;font-size:11px;color:rgba(240,192,64,.7);margin-bottom:20px;display:flex;gap:10px}
+.disclaimer-icon{flex-shrink:0;font-size:14px}
+
+@media print{
+  body{background:white;color:#111}
+  body::before{display:none}
+  header{background:white;border-bottom:2px solid #111;position:static}
+  .upload-zone,.text-panel,.analyze-btn,.btn-row,.disclaimer{display:none}
+  .grade-card,.details-panel,.summary-panel{border:1px solid #ccc;background:white}
+  .details-body{display:block!important}
+  .grade-orb::after{display:none}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-mark">AI</div>
+      <div class="logo-text">
+        <h1>AI GRADE 評讀工具</h1>
+        <p>Powered by Claude AI｜自動證據品質評估</p>
+      </div>
+    </div>
+    <div class="header-badge">Beta v1.0</div>
+  </div>
+</header>
+
+<div class="main">
+
+  <div class="disclaimer">
+    <span class="disclaimer-icon">⚠</span>
+    <span>本工具由 Claude AI 自動分析，結果僅供參考，建議由具備實證醫學背景的專業人員進行最終判斷。AI 評讀可能受文章品質與完整性影響。</span>
+  </div>
+
+  <!-- Upload / Input -->
+  <div id="inputSection">
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="tab-btn active" id="tabText" onclick="switchTab('text')">✎ 貼上文字</button>
+      <button class="tab-btn" id="tabFile" onclick="switchTab('file')">📄 上傳 PDF / TXT</button>
+    </div>
+
+    <!-- Text tab -->
+    <div id="panelText" class="text-panel">
+      <div class="text-panel-header">
+        <span>請貼上研究文章全文或摘要（Abstract）</span>
+      </div>
+      <textarea id="articleText" placeholder="請貼上文章內容於此...
+
+可以只貼摘要（Abstract），也可以貼整篇文章。
+AI 將自動識別：研究設計、樣本數、統計數據、偏差風險、一致性等 GRADE 關鍵要素。"></textarea>
+      <div class="char-count"><span id="charCount">0</span> 字</div>
+    </div>
+
+    <!-- File tab -->
+    <div id="panelFile" style="display:none">
+      <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" ondragover="onDrag(event,true)" ondragleave="onDrag(event,false)" ondrop="onDrop(event)">
+        <div class="upload-inner" id="uploadInner">
+          <div class="upload-icon">📄</div>
+          <div class="upload-title">拖曳文件至此，或點擊選擇</div>
+          <div class="upload-hint">支援 PDF、TXT、DOCX 格式<br>建議上傳含摘要（Abstract）的完整文章</div>
+          <span class="upload-btn">選擇文件</span>
+        </div>
+        <div id="filePreview" style="display:none" class="file-preview">
+          <div class="file-icon">📄</div>
+          <div><div class="file-name" id="fName"></div><div class="file-size" id="fSize"></div></div>
+          <button class="file-remove" onclick="removeFile(event)">✕ 移除</button>
+        </div>
+      </div>
+      <input type="file" id="fileInput" accept=".txt,.pdf,.doc,.docx" onchange="handleFile(event)">
+    </div>
+
+    <button class="analyze-btn" id="analyzeBtn" onclick="startAnalysis()">
+      <span>⊕</span> 開始 AI 自動 GRADE 評讀
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div id="loadingPanel" class="loading-panel" style="display:none">
+    <div class="loading-ring"></div>
+    <div style="font-family:var(--serif);font-size:15px;color:var(--text);margin-bottom:6px">AI 正在分析文章...</div>
+    <div style="font-size:11px;color:var(--text3)">Claude AI 正在逐項評估 GRADE 各面向</div>
+    <div class="loading-steps" id="loadingSteps">
+      <div class="loading-step active" id="ls1"><span class="step-dot"></span>識別研究設計與 PICO 架構</div>
+      <div class="loading-step" id="ls2"><span class="step-dot"></span>評估偏差風險（Risk of Bias）</div>
+      <div class="loading-step" id="ls3"><span class="step-dot"></span>分析不一致性、間接性、不精確性</div>
+      <div class="loading-step" id="ls4"><span class="step-dot"></span>評估發表偏差與升級因素</div>
+      <div class="loading-step" id="ls5"><span class="step-dot"></span>計算最終 GRADE 等級</div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div id="resultSection" style="display:none" class="result-wrap">
+
+    <!-- Grade card -->
+    <div class="grade-card">
+      <div class="grade-card-header">
+        <div class="grade-orb" id="gradeOrb">
+          <span class="orb-label">GRADE</span>
+          <span class="orb-sym" id="orbSym">—</span>
+        </div>
+        <div class="grade-info">
+          <div class="grade-level" id="gradeLevel">—</div>
+          <div class="grade-meaning" id="gradeMeaning">—</div>
+          <div class="grade-confidence" id="gradeConf">—</div>
+        </div>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-bar">
+          <div class="sb-seg sb-h" id="sb1"></div>
+          <div class="sb-seg sb-m" id="sb2"></div>
+          <div class="sb-seg sb-l" id="sb3"></div>
+          <div class="sb-seg sb-v" id="sb4"></div>
+        </div>
+        <div class="score-labels">
+          <span style="color:var(--high)">⊕⊕⊕⊕ 高</span>
+          <span style="color:var(--mod)">⊕⊕⊕◯ 中</span>
+          <span style="color:var(--low)">⊕⊕◯◯ 低</span>
+          <span style="color:var(--vlow)">⊕◯◯◯ 極低</span>
+        </div>
+      </div>
+      <div class="domain-grid" id="domainGrid"></div>
+    </div>
+
+    <!-- Detail sections -->
+    <div class="details-panel" id="detailsPanel"></div>
+
+    <!-- Summary -->
+    <div class="summary-panel">
+      <h3>評讀摘要</h3>
+      <div class="summary-text" id="summaryText"></div>
+      <div class="btn-row">
+        <button class="btn btn-p" onclick="window.print()">🖨️ 列印 / 另存PDF</button>
+        <button class="btn btn-s" onclick="copySummary()">📋 複製摘要</button>
+        <button class="btn btn-s" onclick="resetAll()">↺ 重新分析</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Tab switching
+var currentTab = 'text';
+var uploadedText = '';
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tabText').classList.toggle('active', tab==='text');
+  document.getElementById('tabFile').classList.toggle('active', tab==='file');
+  document.getElementById('panelText').style.display = tab==='text' ? '' : 'none';
+  document.getElementById('panelFile').style.display = tab==='file' ? '' : 'none';
+}
+
+// Char count
+document.getElementById('articleText').addEventListener('input', function(){
+  document.getElementById('charCount').textContent = this.value.length;
+});
+
+// File handling
+function onDrag(e, on) { e.preventDefault(); document.getElementById('dropZone').classList.toggle('drag', on); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag');
+  var f = e.dataTransfer.files[0];
+  if (f) processFile(f);
+}
+function handleFile(e) { if (e.target.files[0]) processFile(e.target.files[0]); }
+function processFile(f) {
+  document.getElementById('fName').textContent = f.name;
+  document.getElementById('fSize').textContent = (f.size/1024).toFixed(1) + ' KB';
+  document.getElementById('uploadInner').style.display = 'none';
+  document.getElementById('filePreview').style.display = 'flex';
+  var reader = new FileReader();
+  reader.onload = function(e){ uploadedText = e.target.result; };
+  reader.readAsText(f);
+}
+function removeFile(e) {
+  e.stopPropagation();
+  uploadedText = '';
+  document.getElementById('uploadInner').style.display = 'block';
+  document.getElementById('filePreview').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+}
+
+// Loading animation
+var lsTimer;
+function animateLoading() {
+  var steps = [1,2,3,4,5];
+  var cur = 0;
+  steps.forEach(function(i){ document.getElementById('ls'+i).className='loading-step'; });
+  document.getElementById('ls1').className='loading-step active';
+  lsTimer = setInterval(function(){
+    if (cur < steps.length-1) {
+      document.getElementById('ls'+steps[cur]).className='loading-step done';
+      cur++;
+      document.getElementById('ls'+steps[cur]).className='loading-step active';
+    }
+  }, 1800);
+}
+
+// Main analysis
+async function startAnalysis() {
+  var text = currentTab==='text'
+    ? document.getElementById('articleText').value.trim()
+    : uploadedText.trim();
+
+  if (!text || text.length < 100) {
+    alert('請輸入至少 100 字的文章內容（建議貼上完整摘要或全文）。');
+    return;
+  }
+
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('inputSection').style.display = 'none';
+  document.getElementById('loadingPanel').style.display = 'block';
+  document.getElementById('resultSection').style.display = 'none';
+  animateLoading();
+
+  try {
+    var result = await callClaude(text);
+    clearInterval(lsTimer);
+    renderResult(result);
+  } catch(err) {
+    clearInterval(lsTimer);
+    document.getElementById('loadingPanel').style.display = 'none';
+    document.getElementById('inputSection').style.display = 'block';
+    document.getElementById('analyzeBtn').disabled = false;
+    alert('分析時發生錯誤：' + err.message + '\n\n請確認文章內容後再試。');
+  }
+}
+
+async function callClaude(articleText) {
+  var prompt = `你是一位實證醫學專家，請根據以下研究文章，依照 GRADE（Grading of Recommendations Assessment, Development and Evaluation）系統進行完整的證據品質評估。
+
+請嚴格以 JSON 格式回應，不要包含任何其他文字。
+
+文章內容：
+"""
+${articleText.substring(0, 6000)}
+"""
+
+請回傳以下 JSON 結構：
+{
+  "pico": {
+    "p": "族群描述",
+    "i": "介入措施",
+    "c": "比較措施",
+    "o": "主要結果指標",
+    "studyCount": "研究數量與樣本數描述"
+  },
+  "design": {
+    "type": "rct 或 obs 或 case 或 sr_rct",
+    "label": "研究設計中文名稱",
+    "startGrade": 4
+  },
+  "domains": {
+    "riskOfBias": {
+      "level": 0,
+      "badge": "不降級 或 降1級 或 降2級",
+      "badgeClass": "db-ok 或 db-d1 或 db-d2",
+      "reason": "判斷理由（1-2句）",
+      "evidence": "文章中的相關描述或數據",
+      "recommendation": "建議注意事項"
+    },
+    "inconsistency": {
+      "level": 0,
+      "badge": "不降級 或 降1級 或 降2級 或 不適用",
+      "badgeClass": "db-ok 或 db-d1 或 db-d2 或 db-na",
+      "reason": "判斷理由",
+      "evidence": "I²值或相關統計數據",
+      "recommendation": "建議注意事項"
+    },
+    "indirectness": {
+      "level": 0,
+      "badge": "不降級 或 降1級 或 降2級",
+      "badgeClass": "db-ok 或 db-d1 或 db-d2",
+      "reason": "判斷理由",
+      "evidence": "族群/介入/結果指標的直接性評估",
+      "recommendation": "建議注意事項"
+    },
+    "imprecision": {
+      "level": 0,
+      "badge": "不降級 或 降1級 或 降2級",
+      "badgeClass": "db-ok 或 db-d1 或 db-d2",
+      "reason": "判斷理由",
+      "evidence": "樣本數、95%CI、p值等統計資料",
+      "recommendation": "建議注意事項"
+    },
+    "publicationBias": {
+      "level": 0,
+      "badge": "不降級 或 降1級 或 降2級 或 無法評估",
+      "badgeClass": "db-ok 或 db-d1 或 db-d2 或 db-na",
+      "reason": "判斷理由",
+      "evidence": "漏斗圖、灰色文獻、贊助情況",
+      "recommendation": "建議注意事項"
+    },
+    "upgrade": {
+      "level": 0,
+      "badge": "無升級因素 或 升1級 或 升2級",
+      "badgeClass": "db-ok 或 db-u",
+      "reason": "升級理由或無升級原因",
+      "evidence": "效應量、劑量反應、混淆因素方向",
+      "recommendation": "說明"
+    }
+  },
+  "finalScore": 3,
+  "finalGrade": "高品質 或 中等品質 或 低品質 或 極低品質",
+  "gradeSymbol": "⊕⊕⊕⊕ 或 ⊕⊕⊕◯ 或 ⊕⊕◯◯ 或 ⊕◯◯◯",
+  "gradeClass": "g-high 或 g-mod 或 g-low 或 g-vlow",
+  "gradeMeaning": "此等級的臨床意義說明（1-2句）",
+  "scoreBar": "high 或 mod 或 low 或 vlow",
+  "downgradeReasons": ["降級原因1", "降級原因2"],
+  "upgradeReasons": [],
+  "summary": "完整評讀摘要，包含：研究概述、各 GRADE 面向評估結果、最終結論（3-5句）",
+  "limitations": "本次評讀的限制說明（資訊不足之處）"
+}
+
+重要規則：
+1. finalScore 從起始分數計算（RCT=4, 觀察性=2, 病例系列=1），每降一級減1分，每升一級加1分，最低1最高4
+2. 若文章資訊不足以評估某面向，badgeClass 使用 db-na，level 使用 0
+3. 所有文字請使用繁體中文
+4. 只回傳 JSON，不要有任何前綴或後綴文字`;
+
+  var response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  if (!response.ok) throw new Error('API 請求失敗（' + response.status + '）');
+  var data = await response.json();
+  var raw = data.content.map(function(b){ return b.text||''; }).join('');
+  var clean = raw.replace(/```json|```/g,'').trim();
+  return JSON.parse(clean);
+}
+
+function renderResult(r) {
+  document.getElementById('loadingPanel').style.display = 'none';
+  document.getElementById('resultSection').style.display = 'block';
+
+  // Grade orb
+  var orb = document.getElementById('gradeOrb');
+  orb.className = 'grade-orb ' + r.gradeClass;
+  document.getElementById('orbSym').textContent = r.gradeSymbol;
+  document.getElementById('gradeLevel').textContent = r.finalGrade;
+  document.getElementById('gradeLevel').style.color = {
+    'g-high':'var(--high)','g-mod':'var(--mod)','g-low':'var(--low)','g-vlow':'var(--vlow)'
+  }[r.gradeClass];
+  document.getElementById('gradeMeaning').textContent = r.gradeMeaning;
+  document.getElementById('gradeConf').textContent =
+    'PICO: P=' + (r.pico.p||'—') + '　I=' + (r.pico.i||'—') + '　O=' + (r.pico.o||'—') +
+    (r.pico.studyCount ? '　｜　' + r.pico.studyCount : '');
+
+  // Score bar
+  var map = {high:'sb1',mod:'sb2',low:'sb3',vlow:'sb4'};
+  ['sb1','sb2','sb3','sb4'].forEach(function(id){ document.getElementById(id).classList.remove('active'); });
+  if (map[r.scoreBar]) document.getElementById(map[r.scoreBar]).classList.add('active');
+
+  // Domain grid
+  var dg = document.getElementById('domainGrid');
+  var domainDefs = [
+    ['riskOfBias','偏差風險'],['inconsistency','不一致性'],
+    ['indirectness','間接性'],['imprecision','不精確性'],
+    ['publicationBias','發表偏差'],['upgrade','升級因素']
+  ];
+  dg.innerHTML = domainDefs.map(function(def){
+    var k=def[0],label=def[1],d=r.domains[k]||{};
+    return '<div class="domain-item"><div class="domain-top"><span class="domain-name">'+label+'</span><span class="domain-badge '+(d.badgeClass||'db-na')+'">'+( d.badge||'未評估')+'</span></div><div class="domain-reason">'+(d.reason||'資訊不足')+'</div></div>';
+  }).join('');
+
+  // Details panel
+  var dp = document.getElementById('detailsPanel');
+  var detDefs = [
+    ['riskOfBias','偏差風險','Risk of Bias'],
+    ['inconsistency','不一致性','Inconsistency'],
+    ['indirectness','間接性','Indirectness'],
+    ['imprecision','不精確性','Imprecision'],
+    ['publicationBias','發表偏差','Publication Bias'],
+    ['upgrade','升級因素','Upgrading Factors']
+  ];
+  dp.innerHTML = detDefs.map(function(def,idx){
+    var k=def[0],zh=def[1],en=def[2],d=r.domains[k]||{};
+    var bc = d.badgeClass||'db-na';
+    var bid = 'det'+idx;
+    return '<div class="details-section"><div class="details-header" onclick="togDet(\''+bid+'\')"><div class="details-header-left"><span class="det-num">'+(idx<5?'降級 '+(idx+1):'升級')+'</span><span class="det-title">'+zh+' <span style="font-size:10px;color:var(--text3);font-weight:400">'+en+'</span></span></div><div style="display:flex;align-items:center;gap:8px"><span class="det-badge '+bc+'">'+(d.badge||'未評估')+'</span><span class="det-chev" id="chev'+bid+'">▼</span></div></div><div class="details-body" id="'+bid+'"><div class="evidence-box"><strong>文章證據</strong>'+(d.evidence||'文章中未提供充足資訊進行評估。')+'</div><div class="evidence-box"><strong>判斷理由</strong>'+(d.reason||'—')+'</div><div class="recommendation-box"><strong>建議注意</strong>'+(d.recommendation||'—')+'</div></div></div>';
+  }).join('');
+
+  // Summary
+  var s = r.summary||'';
+  if (r.downgradeReasons && r.downgradeReasons.length)
+    s += '<br><br><strong>降級原因：</strong>' + r.downgradeReasons.join('、');
+  if (r.upgradeReasons && r.upgradeReasons.length)
+    s += '<br><strong>升級原因：</strong>' + r.upgradeReasons.join('、');
+  if (r.limitations)
+    s += '<br><br><strong>評讀限制：</strong>' + r.limitations;
+  document.getElementById('summaryText').innerHTML = s;
+
+  document.getElementById('resultSection').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function togDet(id) {
+  var b = document.getElementById(id);
+  var c = document.getElementById('chev'+id);
+  var open = b.classList.toggle('open');
+  c.classList.toggle('open', open);
+}
+
+function copySummary() {
+  navigator.clipboard.writeText(document.getElementById('summaryText').innerText)
+    .then(function(){ alert('已複製評讀摘要！'); });
+}
+
+function resetAll() {
+  document.getElementById('inputSection').style.display = 'block';
+  document.getElementById('loadingPanel').style.display = 'none';
+  document.getElementById('resultSection').style.display = 'none';
+  document.getElementById('analyzeBtn').disabled = false;
+  document.getElementById('articleText').value = '';
+  document.getElementById('charCount').textContent = '0';
+  uploadedText = '';
+  document.getElementById('uploadInner').style.display = 'block';
+  document.getElementById('filePreview').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+}
+</script>
+</body>
+</html>
