@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Network Meta-Analysis 圖解教學</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Microsoft JhengHei', Arial, sans-serif; background: #f0f4f8; color: #2d3748; line-height: 1.6; }
+
+  .header {
+    background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%);
+    color: white; padding: 40px 20px; text-align: center;
+  }
+  .header h1 { font-size: 2.2em; margin-bottom: 10px; }
+  .header p { font-size: 1.1em; opacity: 0.9; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+
+  .card {
+    background: white; border-radius: 16px; padding: 30px;
+    margin-bottom: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+  .card h2 {
+    font-size: 1.5em; color: #1a365d; margin-bottom: 20px;
+    padding-bottom: 12px; border-bottom: 3px solid #3182ce;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .emoji { font-size: 1.3em; }
+
+  /* ── Section 1: Evidence Pyramid ── */
+  .pyramid-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .pyramid-row {
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px; color: white; font-weight: bold;
+    font-size: 0.9em; text-align: center; transition: transform .2s;
+    cursor: default;
+  }
+  .pyramid-row:hover { transform: scaleX(1.03); }
+  .pyramid-row .label { padding: 10px 20px; }
+  .pyramid-row .badge {
+    background: rgba(255,255,255,0.25); border-radius: 4px;
+    padding: 2px 8px; font-size: 0.8em; margin-left: 10px;
+  }
+
+  /* ── Section 2: Comparison table ── */
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .compare-box { border-radius: 12px; padding: 20px; }
+  .compare-box.traditional { background: #fff5f5; border: 2px solid #fc8181; }
+  .compare-box.nma { background: #f0fff4; border: 2px solid #68d391; }
+  .compare-box h3 { font-size: 1.1em; margin-bottom: 12px; }
+  .compare-box.traditional h3 { color: #c53030; }
+  .compare-box.nma h3 { color: #276749; }
+  .compare-box ul { list-style: none; }
+  .compare-box ul li { padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.95em; }
+  .compare-box ul li::before { margin-right: 8px; }
+  .compare-box.traditional ul li::before { content: "✗"; color: #fc8181; }
+  .compare-box.nma ul li::before { content: "✓"; color: #68d391; }
+
+  /* ── Section 3: Network diagram ── */
+  .network-svg-wrap { display: flex; justify-content: center; align-items: center; }
+  svg.network { width: 100%; max-width: 500px; height: 380px; }
+
+  /* ── Section 4: Steps ── */
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step {
+    display: flex; gap: 20px; align-items: flex-start;
+    padding: 18px 0; border-bottom: 1px dashed #e2e8f0;
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    min-width: 48px; height: 48px; border-radius: 50%;
+    background: linear-gradient(135deg, #3182ce, #63b3ed);
+    color: white; font-size: 1.3em; font-weight: bold;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 10px rgba(49,130,206,0.4);
+  }
+  .step-body h4 { font-size: 1.05em; color: #1a365d; margin-bottom: 4px; }
+  .step-body p { font-size: 0.9em; color: #4a5568; }
+  .step-body .tag {
+    display: inline-block; background: #ebf8ff; color: #2b6cb0;
+    border-radius: 4px; padding: 2px 8px; font-size: 0.8em;
+    margin-top: 6px; font-family: monospace;
+  }
+
+  /* ── Section 5: Forest / interval plot ── */
+  .forest-table { width: 100%; border-collapse: collapse; }
+  .forest-table th { background: #1a365d; color: white; padding: 10px 12px; text-align: left; font-size: 0.9em; }
+  .forest-table td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 0.9em; }
+  .forest-table tr:hover td { background: #ebf8ff; }
+  .bar-wrap { position: relative; height: 20px; background: #edf2f7; border-radius: 4px; min-width: 200px; }
+  .bar-fill { height: 100%; border-radius: 4px; position: absolute; top: 0; }
+  .bar-ci { position: absolute; top: 8px; height: 4px; background: rgba(0,0,0,0.3); border-radius: 2px; }
+  .bar-dot { position: absolute; top: 4px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; }
+  .sig-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; }
+  .sig { background: #c6f6d5; color: #276749; }
+  .not-sig { background: #fed7d7; color: #c53030; }
+
+  /* ── Section 6: SUCRA chart ── */
+  .sucra-wrap { display: flex; flex-direction: column; gap: 16px; }
+  .sucra-row { display: flex; align-items: center; gap: 16px; }
+  .sucra-label { min-width: 200px; font-size: 0.95em; }
+  .sucra-bar-bg { flex: 1; height: 32px; background: #edf2f7; border-radius: 8px; overflow: hidden; position: relative; }
+  .sucra-bar-fill { height: 100%; border-radius: 8px; display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; color: white; font-weight: bold; font-size: 0.9em; transition: width 1s ease; }
+  .sucra-val { min-width: 50px; font-weight: bold; font-size: 1em; }
+  .rank-badge { display: inline-block; width: 28px; height: 28px; border-radius: 50%; color: white; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 0.85em; }
+
+  /* ── Section 7: Publication bias ── */
+  .funnel-info { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: center; }
+  .funnel-desc p { margin-bottom: 10px; font-size: 0.95em; color: #4a5568; }
+  .funnel-svg-wrap { display: flex; justify-content: center; }
+
+  /* ── Conclusion ── */
+  .conclusion { background: linear-gradient(135deg, #e6fffa, #ebf8ff); border: 2px solid #81e6d9; border-radius: 12px; padding: 24px; }
+  .conclusion h3 { color: #2c7a7b; font-size: 1.2em; margin-bottom: 14px; }
+  .conclusion ul { list-style: none; }
+  .conclusion ul li { padding: 6px 0; font-size: 0.95em; }
+  .conclusion ul li::before { content: "🔑 "; }
+
+  .highlight { color: #3182ce; font-weight: bold; }
+  .winner { color: #276749; font-weight: bold; font-size: 1.05em; }
+
+  @media (max-width: 600px) {
+    .compare-grid, .funnel-info { grid-template-columns: 1fr; }
+    .sucra-label { min-width: 120px; font-size: 0.85em; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 Network Meta-Analysis 圖解教學</h1>
+  <p>網絡統合分析 — 從概念到結果，一圖看懂</p>
+  <p style="margin-top:8px; font-size:0.85em; opacity:0.7;">資料來源：114年6月10日 中榮醫研部生統小組 教育訓練</p>
+</div>
+
+<div class="container">
+
+  <!-- ════ 1. Evidence Pyramid ════ -->
+  <div class="card">
+    <h2><span class="emoji">🏆</span> 實證醫學的證據等級</h2>
+    <p style="margin-bottom:18px; color:#4a5568; font-size:0.95em;">研究設計越嚴謹，偏差越少，證據力越強。NMA 位於金字塔頂端。</p>
+    <div class="pyramid-wrap">
+      <div class="pyramid-row" style="width:200px; background:linear-gradient(135deg,#744210,#b7791f);">
+        <span class="label">NMA / Systematic Review <span class="badge">Level 1++</span></span>
+      </div>
+      <div class="pyramid-row" style="width:280px; background:linear-gradient(135deg,#c05621,#dd6b20);">
+        <span class="label">Meta-Analysis / RCT <span class="badge">Level 1</span></span>
+      </div>
+      <div class="pyramid-row" style="width:360px; background:linear-gradient(135deg,#276749,#38a169);">
+        <span class="label">世代研究 (Cohort Study) <span class="badge">Level 2</span></span>
+      </div>
+      <div class="pyramid-row" style="width:440px; background:linear-gradient(135deg,#1a365d,#2b6cb0);">
+        <span class="label">病例對照研究 (Case-Control) <span class="badge">Level 3</span></span>
+      </div>
+      <div class="pyramid-row" style="width:520px; background:linear-gradient(135deg,#553c9a,#805ad5);">
+        <span class="label">橫斷面研究 (Cross-Sectional) <span class="badge">Level 4</span></span>
+      </div>
+      <div class="pyramid-row" style="width:600px; background:linear-gradient(135deg,#63171b,#c53030);">
+        <span class="label">個案報告 / 專家意見 (Case Report / Opinion) <span class="badge">Level 5</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ 2. Traditional vs NMA ════ -->
+  <div class="card">
+    <h2><span class="emoji">⚖️</span> 傳統 Meta-Analysis vs. Network Meta-Analysis</h2>
+    <div class="compare-grid">
+      <div class="compare-box traditional">
+        <h3>📉 傳統 Meta-Analysis</h3>
+        <ul>
+          <li>只能比較「兩種」治療方式</li>
+          <li>僅有直接比較（A vs. B）</li>
+          <li>無法排名多種療法優劣</li>
+          <li>難以找出「最佳療法」</li>
+          <li>呈現：森林圖 Forest Plot</li>
+        </ul>
+        <div style="margin-top:12px; background:#fff; border-radius:8px; padding:10px; text-align:center; font-size:0.85em; color:#c53030;">
+          A ←→ B（只能比較一對）
+        </div>
+      </div>
+      <div class="compare-box nma">
+        <h3>📈 Network Meta-Analysis</h3>
+        <ul>
+          <li>可同時比較「多種」治療方式</li>
+          <li>直接 + <strong>間接比較</strong>都納入</li>
+          <li>計算 SUCRA 給出排名</li>
+          <li>能找出「最佳療法」</li>
+          <li>呈現：網絡圖 + 排名圖</li>
+        </ul>
+        <div style="margin-top:12px; background:#fff; border-radius:8px; padding:10px; text-align:center; font-size:0.85em; color:#276749;">
+          A ←→ B ←→ C ←→ D ←→ E（全部一起比！）
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px; background:#fffaf0; border-left:4px solid #ed8936; padding:12px 16px; border-radius:0 8px 8px 0; font-size:0.9em;">
+      <strong>💡 關鍵概念：間接比較</strong> — 即使 A 和 D 從未在同一個 RCT 中比較過，只要 A 有與 B 比較、B 有與 D 比較，NMA 就能推算出 A vs. D 的相對效果！
+    </div>
+  </div>
+
+  <!-- ════ 3. Network Map ════ -->
+  <div class="card">
+    <h2><span class="emoji">🕸️</span> 網絡幾何圖 (Network Geometry)</h2>
+    <p style="margin-bottom:18px; color:#4a5568; font-size:0.95em;">圓圈 = 治療方式（大小代表研究數量），連線 = 兩者有直接比較的 RCT</p>
+    <div class="network-svg-wrap">
+      <svg class="network" viewBox="0 0 500 380">
+        <!-- Background grid dots -->
+        <defs>
+          <radialGradient id="gA" cx="50%" cy="50%"><stop offset="0%" stop-color="#c53030"/><stop offset="100%" stop-color="#9b2c2c"/></radialGradient>
+          <radialGradient id="gB" cx="50%" cy="50%"><stop offset="0%" stop-color="#3182ce"/><stop offset="100%" stop-color="#2b6cb0"/></radialGradient>
+          <radialGradient id="gC" cx="50%" cy="50%"><stop offset="0%" stop-color="#38a169"/><stop offset="100%" stop-color="#276749"/></radialGradient>
+          <radialGradient id="gD" cx="50%" cy="50%"><stop offset="0%" stop-color="#b7791f"/><stop offset="100%" stop-color="#744210"/></radialGradient>
+          <radialGradient id="gE" cx="50%" cy="50%"><stop offset="0%" stop-color="#805ad5"/><stop offset="100%" stop-color="#553c9a"/></radialGradient>
+        </defs>
+
+        <!-- Connection lines -->
+        <line x1="250" y1="80" x2="130" y2="210" stroke="#a0aec0" stroke-width="6" stroke-linecap="round"/>
+        <line x1="250" y1="80" x2="370" y2="210" stroke="#a0aec0" stroke-width="4" stroke-linecap="round"/>
+        <line x1="250" y1="80" x2="250" y2="310" stroke="#a0aec0" stroke-width="8" stroke-linecap="round"/>
+        <line x1="130" y1="210" x2="250" y2="310" stroke="#a0aec0" stroke-width="4" stroke-linecap="round"/>
+        <line x1="370" y1="210" x2="250" y2="310" stroke="#a0aec0" stroke-width="6" stroke-linecap="round"/>
+        <line x1="130" y1="210" x2="370" y2="210" stroke="#a0aec0" stroke-width="3" stroke-linecap="round" stroke-dasharray="6,4"/>
+        <line x1="250" y1="80" x2="420" y2="300" stroke="#a0aec0" stroke-width="2" stroke-linecap="round" stroke-dasharray="6,4"/>
+        <line x1="130" y1="210" x2="90" y2="330" stroke="#a0aec0" stroke-width="2" stroke-linecap="round" stroke-dasharray="6,4"/>
+
+        <!-- E node -->
+        <circle cx="250" cy="310" r="36" fill="url(#gE)" filter="drop-shadow(0 3px 8px rgba(0,0,0,0.25))"/>
+        <text x="250" y="307" text-anchor="middle" fill="white" font-size="14" font-weight="bold">E</text>
+        <text x="250" y="323" text-anchor="middle" fill="white" font-size="9">Combination</text>
+
+        <!-- B node -->
+        <circle cx="130" cy="210" r="32" fill="url(#gB)" filter="drop-shadow(0 3px 8px rgba(0,0,0,0.25))"/>
+        <text x="130" y="207" text-anchor="middle" fill="white" font-size="14" font-weight="bold">B</text>
+        <text x="130" y="221" text-anchor="middle" fill="white" font-size="9">IV single</text>
+
+        <!-- C node -->
+        <circle cx="370" cy="210" r="28" fill="url(#gC)" filter="drop-shadow(0 3px 8px rgba(0,0,0,0.25))"/>
+        <text x="370" y="207" text-anchor="middle" fill="white" font-size="14" font-weight="bold">C</text>
+        <text x="370" y="221" text-anchor="middle" fill="white" font-size="9">IV double</text>
+
+        <!-- A (reference) node -->
+        <circle cx="250" cy="80" r="44" fill="url(#gA)" filter="drop-shadow(0 3px 8px rgba(0,0,0,0.25))"/>
+        <text x="250" y="77" text-anchor="middle" fill="white" font-size="15" font-weight="bold">A</text>
+        <text x="250" y="93" text-anchor="middle" fill="white" font-size="10">Placebo</text>
+        <text x="250" y="106" text-anchor="middle" fill="white" font-size="8">(Reference)</text>
+
+        <!-- D node (winner) with star -->
+        <circle cx="420" cy="300" r="32" fill="url(#gD)" filter="drop-shadow(0 4px 12px rgba(183,121,31,0.5))"/>
+        <text x="420" y="297" text-anchor="middle" fill="white" font-size="14" font-weight="bold">D</text>
+        <text x="420" y="311" text-anchor="middle" fill="white" font-size="9">Topical</text>
+        <!-- Star badge -->
+        <text x="444" y="280" font-size="18">⭐</text>
+
+        <!-- Legend -->
+        <rect x="10" y="10" width="200" height="80" rx="8" fill="white" fill-opacity="0.9"/>
+        <text x="20" y="30" font-size="11" fill="#4a5568" font-weight="bold">圖例 Legend</text>
+        <line x1="20" y1="45" x2="50" y2="45" stroke="#a0aec0" stroke-width="5"/>
+        <text x="55" y="49" font-size="10" fill="#4a5568">粗線 = 研究較多</text>
+        <line x1="20" y1="60" x2="50" y2="60" stroke="#a0aec0" stroke-width="2" stroke-dasharray="5,3"/>
+        <text x="55" y="64" font-size="10" fill="#4a5568">虛線 = 間接比較</text>
+        <circle cx="30" cy="77" r="8" fill="#b7791f"/>
+        <text x="55" y="81" font-size="10" fill="#4a5568">⭐ = 最佳療法</text>
+
+        <!-- Small extra node at bottom left -->
+        <circle cx="90" cy="330" r="22" fill="#718096" opacity="0.6"/>
+        <text x="90" y="327" text-anchor="middle" fill="white" font-size="11" font-weight="bold">...</text>
+        <text x="90" y="340" text-anchor="middle" fill="white" font-size="8">其他研究</text>
+      </svg>
+    </div>
+    <p style="text-align:center; color:#718096; font-size:0.85em; margin-top:10px;">節點越大 = 納入研究數越多；線段越粗 = 直接比較研究越多</p>
+  </div>
+
+  <!-- ════ 4. 5 Steps ════ -->
+  <div class="card">
+    <h2><span class="emoji">🗺️</span> NMA 分析五大步驟</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>建立網絡幾何圖 Network Geometry</h4>
+          <p>釐清哪些治療方案有直接比較的研究，畫出網絡圖，設定基準對照組（Reference）。</p>
+          <span class="tag">network map</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>檢定不一致性 Testing for Inconsistency</h4>
+          <p>NMA 的重要前提假設：直接比較與間接比較的結果必須一致。分為整體（Global）和局部（Local）兩種檢定。若 p &gt; 0.05，無法拒絕虛無假說 → 一致性可接受，繼續分析。</p>
+          <span class="tag">network meta inconsistency</span>
+          <span class="tag" style="margin-left:6px;">network sidesplit all</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>建立效應值圖表與位階表 Effect Size Plots & League Table</h4>
+          <p>產出網絡森林圖（Network Forest Plot）及區間圖（Interval Plot），呈現各組別之間的效應值（ES）及 95% 信賴區間。</p>
+          <span class="tag">network forest</span>
+          <span class="tag" style="margin-left:6px;">intervalplot, eform</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>決定治療的相對排名 Relative Rankings (SUCRA)</h4>
+          <p>計算 SUCRA（累積排名曲線下面積）值，數值越高 → 越可能是最佳療法。本範例中 D 組（Topical）SUCRA = 1.0，達到最佳排名的機率為 98.3%。</p>
+          <span class="tag">network rank min/max</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <h4>檢查出版偏差 Publication Bias</h4>
+          <p>繪製網絡漏斗圖（Network Funnel Plot），檢視標準誤（SE）與效應值是否對稱分布。若漏斗形狀對稱 → 出版偏差小，分析結果較可信。</p>
+          <span class="tag">netfunnel diff se t1 t2, random</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ 5. Effect Sizes ════ -->
+  <div class="card">
+    <h2><span class="emoji">🌲</span> 各治療方式 vs 安慰劑 — 效應值 (Effect Size)</h2>
+    <p style="margin-bottom:18px; color:#4a5568; font-size:0.95em;">效應值 &lt; 1 且信賴區間不跨過 1 → 有統計顯著效果（比安慰劑更好）</p>
+    <table class="forest-table">
+      <thead>
+        <tr>
+          <th>比較組合</th>
+          <th>治療內容</th>
+          <th>效應值 (OR)</th>
+          <th>95% 信賴區間</th>
+          <th>視覺化</th>
+          <th>顯著性</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>D vs A</strong></td>
+          <td>局部使用 vs 安慰劑</td>
+          <td><strong style="color:#b7791f">0.04</strong></td>
+          <td>(0.01, 0.19)</td>
+          <td>
+            <div class="bar-wrap">
+              <div class="bar-fill" style="width:4%; background:#b7791f; opacity:0.6;"></div>
+              <div class="bar-ci" style="left:1%; width:19%; background:#b7791f;"></div>
+              <div class="bar-dot" style="left:calc(4% - 6px); background:#b7791f;"></div>
+            </div>
+          </td>
+          <td><span class="sig-badge sig">顯著 ★★★</span></td>
+        </tr>
+        <tr>
+          <td><strong>B vs A</strong></td>
+          <td>IV 單次 vs 安慰劑</td>
+          <td><strong style="color:#3182ce">0.23</strong></td>
+          <td>(0.15, 0.36)</td>
+          <td>
+            <div class="bar-wrap">
+              <div class="bar-fill" style="width:23%; background:#3182ce; opacity:0.6;"></div>
+              <div class="bar-ci" style="left:15%; width:21%; background:#3182ce;"></div>
+              <div class="bar-dot" style="left:calc(23% - 6px); background:#3182ce;"></div>
+            </div>
+          </td>
+          <td><span class="sig-badge sig">顯著 ★★★</span></td>
+        </tr>
+        <tr>
+          <td><strong>C vs A</strong></td>
+          <td>IV 雙次 vs 安慰劑</td>
+          <td><strong style="color:#38a169">0.32</strong></td>
+          <td>(0.20, 0.51)</td>
+          <td>
+            <div class="bar-wrap">
+              <div class="bar-fill" style="width:32%; background:#38a169; opacity:0.6;"></div>
+              <div class="bar-ci" style="left:20%; width:31%; background:#38a169;"></div>
+              <div class="bar-dot" style="left:calc(32% - 6px); background:#38a169;"></div>
+            </div>
+          </td>
+          <td><span class="sig-badge sig">顯著 ★★★</span></td>
+        </tr>
+        <tr>
+          <td><strong>E vs A</strong></td>
+          <td>合併使用 vs 安慰劑</td>
+          <td><strong style="color:#805ad5">0.34</strong></td>
+          <td>(0.25, 0.48)</td>
+          <td>
+            <div class="bar-wrap">
+              <div class="bar-fill" style="width:34%; background:#805ad5; opacity:0.6;"></div>
+              <div class="bar-ci" style="left:25%; width:23%; background:#805ad5;"></div>
+              <div class="bar-dot" style="left:calc(34% - 6px); background:#805ad5;"></div>
+            </div>
+          </td>
+          <td><span class="sig-badge sig">顯著 ★★★</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px; background:#fffaf0; border-left:4px solid #ed8936; padding:12px 16px; border-radius:0 8px 8px 0; font-size:0.9em;">
+      <strong>💡 如何閱讀效應值：</strong>效應值 = 0.04 表示 D 組的事件發生風險只有安慰劑的 4%，代表 D 組的治療效果非常顯著。所有治療（B、C、D、E）均優於安慰劑。
+    </div>
+  </div>
+
+  <!-- ════ 6. SUCRA Ranking ════ -->
+  <div class="card">
+    <h2><span class="emoji">🏅</span> SUCRA 治療排名 — 誰是最佳療法？</h2>
+    <p style="margin-bottom:20px; color:#4a5568; font-size:0.95em;">SUCRA 值越接近 <strong>1.0</strong> = 越可能是最佳療法；越接近 <strong>0.0</strong> = 越可能是最差療法</p>
+    <div class="sucra-wrap">
+
+      <div class="sucra-row">
+        <div class="sucra-label">
+          <span class="rank-badge" style="background:#b7791f; display:inline-flex;">🥇</span>
+          <strong style="margin-left:8px;">D — Topical use（局部使用）</strong>
+        </div>
+        <div class="sucra-bar-bg">
+          <div class="sucra-bar-fill" style="width:100%; background:linear-gradient(90deg,#b7791f,#f6ad55);">
+            1.0 ★ 最佳
+          </div>
+        </div>
+        <div class="sucra-val" style="color:#b7791f;">1.00</div>
+      </div>
+
+      <div class="sucra-row">
+        <div class="sucra-label">
+          <span class="rank-badge" style="background:#3182ce; display:inline-flex;">🥈</span>
+          <strong style="margin-left:8px;">B — IV single（靜脈單次）</strong>
+        </div>
+        <div class="sucra-bar-bg">
+          <div class="sucra-bar-fill" style="width:70%; background:linear-gradient(90deg,#2b6cb0,#63b3ed);">
+            0.7
+          </div>
+        </div>
+        <div class="sucra-val" style="color:#3182ce;">0.70</div>
+      </div>
+
+      <div class="sucra-row">
+        <div class="sucra-label">
+          <span class="rank-badge" style="background:#38a169; display:inline-flex;">🥉</span>
+          <strong style="margin-left:8px;">C — IV double（靜脈雙次）</strong>
+        </div>
+        <div class="sucra-bar-bg">
+          <div class="sucra-bar-fill" style="width:40%; background:linear-gradient(90deg,#276749,#68d391);">
+            0.4
+          </div>
+        </div>
+        <div class="sucra-val" style="color:#38a169;">0.40</div>
+      </div>
+
+      <div class="sucra-row">
+        <div class="sucra-label">
+          <span class="rank-badge" style="background:#805ad5; display:inline-flex;">4</span>
+          <strong style="margin-left:8px;">E — Combination（合併使用）</strong>
+        </div>
+        <div class="sucra-bar-bg">
+          <div class="sucra-bar-fill" style="width:40%; background:linear-gradient(90deg,#553c9a,#b794f4);">
+            0.4
+          </div>
+        </div>
+        <div class="sucra-val" style="color:#805ad5;">0.40</div>
+      </div>
+
+      <div class="sucra-row">
+        <div class="sucra-label">
+          <span class="rank-badge" style="background:#c53030; display:inline-flex;">5</span>
+          <strong style="margin-left:8px;">A — Placebo（安慰劑）</strong>
+        </div>
+        <div class="sucra-bar-bg">
+          <div class="sucra-bar-fill" style="width:2%; background:#c53030;">
+          </div>
+        </div>
+        <div class="sucra-val" style="color:#c53030;">0.00</div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px; background:#fffbf0; border:2px solid #f6ad55; border-radius:12px; padding:16px; text-align:center;">
+      <div style="font-size:1.3em; font-weight:bold; color:#b7791f;">⭐ 最終結論：D 組（局部使用 Topical Use）為最佳療法</div>
+      <div style="margin-top:8px; color:#744210; font-size:0.95em;">達到最佳排名的機率高達 <strong>98.3%</strong>，SUCRA = 1.0，遠優於其他治療方式</div>
+    </div>
+  </div>
+
+  <!-- ════ 7. Publication Bias Funnel ════ -->
+  <div class="card">
+    <h2><span class="emoji">🔭</span> 出版偏差檢定 — 網絡漏斗圖</h2>
+    <div class="funnel-info">
+      <div class="funnel-desc">
+        <p><strong>什麼是出版偏差？</strong><br>有陽性（顯著）結果的研究更容易被發表，導致 meta-analysis 結果被高估。</p>
+        <p><strong>如何用漏斗圖檢查？</strong><br>X 軸 = 效應值大小，Y 軸 = 標準誤（SE）大小。研究越精確（樣本數大）→ 標準誤越小 → 點越靠近頂端。</p>
+        <p><strong>如何判讀？</strong></p>
+        <ul style="list-style:none; margin-left:4px;">
+          <li>✅ <strong>對稱分布</strong> → 出版偏差小，結果可信</li>
+          <li>❌ <strong>不對稱</strong> → 可能有出版偏差</li>
+        </ul>
+        <div style="margin-top:12px; background:#f0fff4; border-left:3px solid #68d391; padding:10px; font-size:0.9em; border-radius:0 6px 6px 0;">
+          <strong>Stata 指令：</strong><br>
+          <code style="background:#e2e8f0; padding:2px 6px; border-radius:3px;">netfunnel diff se t1 t2, random bycomparison</code>
+        </div>
+      </div>
+      <div class="funnel-svg-wrap">
+        <svg width="260" height="240" viewBox="0 0 260 240">
+          <!-- axes -->
+          <line x1="40" y1="20" x2="40" y2="200" stroke="#a0aec0" stroke-width="2"/>
+          <line x1="40" y1="200" x2="230" y2="200" stroke="#a0aec0" stroke-width="2"/>
+          <!-- funnel shape (symmetric = good) -->
+          <polygon points="130,30 60,190 200,190" fill="none" stroke="#3182ce" stroke-width="2" stroke-dasharray="6,4"/>
+          <!-- dots (symmetric) -->
+          <circle cx="130" cy="50"  r="5" fill="#3182ce" opacity="0.8"/>
+          <circle cx="118" cy="80"  r="5" fill="#3182ce" opacity="0.8"/>
+          <circle cx="142" cy="80"  r="5" fill="#38a169" opacity="0.8"/>
+          <circle cx="105" cy="110" r="5" fill="#3182ce" opacity="0.8"/>
+          <circle cx="155" cy="110" r="5" fill="#38a169" opacity="0.8"/>
+          <circle cx="128" cy="120" r="5" fill="#b7791f" opacity="0.8"/>
+          <circle cx="90"  cy="150" r="5" fill="#3182ce" opacity="0.8"/>
+          <circle cx="170" cy="150" r="5" fill="#38a169" opacity="0.8"/>
+          <circle cx="112" cy="155" r="5" fill="#805ad5" opacity="0.8"/>
+          <circle cx="148" cy="155" r="5" fill="#805ad5" opacity="0.8"/>
+          <circle cx="75"  cy="180" r="5" fill="#c53030" opacity="0.7"/>
+          <circle cx="185" cy="180" r="5" fill="#c53030" opacity="0.7"/>
+          <!-- axis labels -->
+          <text x="130" y="220" text-anchor="middle" font-size="11" fill="#4a5568">效應值 (Effect Size)</text>
+          <text x="15" y="110" text-anchor="middle" font-size="10" fill="#4a5568" transform="rotate(-90, 15, 110)">標準誤 SE (小→大)</text>
+          <text x="130" y="18" text-anchor="middle" font-size="10" fill="#276749" font-weight="bold">✓ 對稱 = 偏差小</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ Conclusion ════ -->
+  <div class="card">
+    <h2><span class="emoji">💡</span> 總結重點</h2>
+    <div class="conclusion">
+      <h3>Network Meta-Analysis 核心精華</h3>
+      <ul>
+        <li>NMA 是傳統 Meta-Analysis 的延伸，可以<span class="highlight">同時比較多種療法</span>並給出排名</li>
+        <li>透過直接 + 間接比較，即使兩種療法沒有直接 RCT，也能推算相對效果</li>
+        <li>五大步驟：網絡圖 → 一致性檢定 → 效應值圖 → SUCRA 排名 → 出版偏差</li>
+        <li><span class="highlight">SUCRA 越高</span> = 越可能是最佳療法（本例：D 組局部使用 = 1.0，最佳）</li>
+        <li>單一 RCT 有隨機誤差風險，NMA 整合多研究，<span class="highlight">證據力更強、更客觀</span></li>
+        <li>分析時需注意：研究種類、品質、訊息強度，勿盲目信任結果</li>
+      </ul>
+    </div>
+    <div style="margin-top:20px; text-align:center; color:#718096; font-size:0.85em;">
+      資料來源：114年6月10日 中榮醫研部 生統小組 陳韻伃博士 教育訓練講義<br>
+      圖表製作：Claude Code (NotebookLM MCP)
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Animate SUCRA bars on load
+  document.addEventListener('DOMContentLoaded', () => {
+    const bars = document.querySelectorAll('.sucra-bar-fill');
+    bars.forEach(bar => {
+      const targetWidth = bar.style.width;
+      bar.style.width = '0%';
+      setTimeout(() => { bar.style.width = targetWidth; }, 300);
+    });
+  });
+</script>
+
+</body>
+</html>
