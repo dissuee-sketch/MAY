@@ -1,0 +1,23 @@
+Non-pharmacological interventions for reducing wandering behavior
+in people with dementia: a systematic review and network meta-analysis
+
+Population: People with any type of dementia (any setting: community, nursing home, hospital ward)
+Interventions (non-pharmacological, candidate network nodes):
+  - Environmental modification (visual barriers, camouflaged exits, floor grids, signage, wandering paths)
+  - Assistive / monitoring technology (GPS tracking, door alarms, bed/chair exit sensors)
+  - Physical activity / structured walking programs
+  - Sensory-based therapy (music, multisensory stimulation, aromatherapy, light therapy)
+  - Psychosocial / behavioral (person-centred care, structured activities, doll therapy, reminiscence)
+  - Caregiver education / training
+Comparator: Usual care, attention control, or another non-pharmacological intervention
+Outcomes:
+  Primary: Frequency or severity of wandering (e.g., NPI aberrant motor behavior subscale, CMAI wandering items, RAWS)
+  Secondary:
+    - Getting-lost / elopement / exit-seeking events
+    - Falls
+    - Agitation (CMAI total)
+    - Caregiver burden (ZBI)
+    - Quality of life (QoL-AD)
+    - Physical restraint use
+Study designs: RCTs (incl. cluster and crossover). Quasi-experimental studies only if Plan B is triggered (see 00_overview/feasibility.md).
+Target journal: Ageing Research Reviews (backup: International Journal of Nursing Studies, Geriatric Nursing)
