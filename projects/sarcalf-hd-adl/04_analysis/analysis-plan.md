@@ -64,14 +64,16 @@
 
 **SPSS**：分析 → 迴歸 → 二元 Logistic
 - 依變數：`had_outcome`
-- 共變量（**最多約 7 個**，因為 70 個事件 ÷ 10）：
+- 共變量（**最多 6 個參數**，因為約 63 個事件 ÷ 10）：
   1. `sarc_calf_positive`（主角）
   2. `age`
   3. `charlson_index`
   4. `albumin_g_dl`
   5. `delirium_any`
-  6. `los_days`
-  7. `admit_diagnosis_group`（設為類別變數）
+  6. 入院診斷：感染 vs. 非感染（由 `admit_diagnosis_group` 轉成 0／1）
+
+> 注意：類別變項有幾組，就會用掉「組數 − 1」個參數。`admit_diagnosis_group` 原本有 4 組，直接放入會用掉 3 個參數，所以改成二分。
+> `los_days`（住院天數）**不放入模型**：住院越久可能是「因為功能下降」，屬於結果而不是原因，放進去反而會把 SARC-CalF 的效果抵銷掉。
 - 勾選「Exp(B) 的信賴區間 95%」
 
 **怎麼看結果**：找 `sarc_calf_positive` 那一列

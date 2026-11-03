@@ -12,10 +12,20 @@
 | 6 | Tu X, et al. *Eur Geriatr Med* 2024;15:579-88. [doi:10.1007/s41999-024-00948-5](https://doi.org/10.1007/s41999-024-00948-5) | 高齡住院病人：SARC-CalF 的 AUC 男 0.845、女 0.763，優於 SARC-F | 住院病人也適用 SARC-CalF |
 | 7 | Lin YL, et al. *Nutrients* 2022;14:923. [doi:10.3390/nu14050923](https://doi.org/10.3390/nu14050923) | 台灣腹膜透析病人：SARC-CalF、小腿圍優於 SARC-F | 台灣本土數據 |
 
+## 住院相關失能（HAD）與介入（樣本數與預期效益依據）
+
+| # | 文獻 | 重點 | 寫在計畫書哪裡 |
+|---|---|---|---|
+| 8 | Loyd C, et al. *J Am Med Dir Assoc* 2020;21:455-61. [doi:10.1016/j.jamda.2019.09.015](https://doi.org/10.1016/j.jamda.2019.09.015) | 統合分析，7,375 位 ≥65 歲住院病人，HAD 盛行率 30%（95% CI 24–33%） | 背景、樣本數 |
+| 9 | Giacomino K, et al. *PeerJ* 2023;11:e16036. [doi:10.7717/peerj.16036](https://doi.org/10.7717/peerj.16036) | 系統性回顧，HAD 發生率 37%（95% CI 30–43%） | 背景、樣本數 |
+| 10 | Valenzuela PL, et al. *Ageing Res Rev* 2020;61:101076. [doi:10.1016/j.arr.2020.101076](https://doi.org/10.1016/j.arr.2020.101076) | 住院中運動介入可改善出院功能獨立性（SMD 0.64） | 研究缺口結語、預期效益 |
+| 11 | Yan M, et al. *Front Med* 2026;13:1926926. [doi:10.3389/fmed.2026.1926926](https://doi.org/10.3389/fmed.2026.1926926) | 腓腸肌超音波診斷透析病人肌少症（AUC 0.823） | 研究限制 |
+
 ## 還需要補的文獻（請用 PubMed 或 CINAHL 查）
 
 - [ ] SARC-CalF 原始發表：Barbosa-Silva TG, et al. *J Am Med Dir Assoc* 2016
 - [ ] AWGS 2019 共識：Chen LK, et al. *J Am Med Dir Assoc* 2020
-- [ ] 住院相關失能的定義與發生率：Covinsky KE, et al. *JAMA* 2011；Loyd C, et al. *J Am Med Dir Assoc* 2020（系統性回顧）
+- [x] 住院相關失能的發生率：已補 Loyd 2020、Giacomino 2023
+- [ ] 住院相關失能的定義：Covinsky KE, et al. *JAMA* 2011
 - [ ] 巴氏量表中文版信效度
 - [ ] 台灣透析年報（台灣腎臟醫學會）：高齡透析人口數據
