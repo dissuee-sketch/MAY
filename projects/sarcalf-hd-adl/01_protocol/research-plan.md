@@ -107,7 +107,8 @@
 | α／檢定力 | 0.05（雙尾）／80% | 慣例 |
 
 **計算結果**
-- 公式（兩獨立比例差異）：每組 **89 人**，合計 178 人
+- 工具：G*Power 3.1，z tests → Proportions: Difference between two independent proportions（雙尾），設定步驟見 `04_analysis/gpower-sample-size.md`
+- 結果：每組 **89 人**，合計 178 人
 - 加上 10% 流失（提早出院、撤回同意）：178 ÷ 0.9 = 198 → **預計收案 200 人**
 
 **檢核**
