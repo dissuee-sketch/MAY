@@ -1,0 +1,126 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  html,body{margin:0;padding:0;background:#fff}
+  svg{display:block;font-family:"WenQuanYi Zen Hei","Microsoft JhengHei","Noto Sans TC",sans-serif}
+  .h{font-size:30px;font-weight:700;fill:#fff}
+  .sub{font-size:26px;font-weight:700}
+  .t{font-size:22px;fill:#1f2933}
+  .s{font-size:19px;fill:#3e4c59}
+  .lab{font-size:21px;font-weight:700;fill:#1f2933}
+</style></head>
+<body>
+<svg id="fig" xmlns="http://www.w3.org/2000/svg" width="1600" height="1130" viewBox="0 0 1600 1130">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/>
+    </marker>
+    <marker id="arg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#52606d"/>
+    </marker>
+  </defs>
+
+  <!-- ===== 自變項 ===== -->
+  <rect x="40" y="30" width="540" height="450" rx="14" fill="#eef4fb" stroke="#1d4e89" stroke-width="3"/>
+  <rect x="40" y="30" width="540" height="62" rx="14" fill="#1d4e89"/>
+  <rect x="40" y="70" width="540" height="22" fill="#1d4e89"/>
+  <text x="310" y="72" text-anchor="middle" class="h">自變項</text>
+  <text x="310" y="135" text-anchor="middle" class="sub" fill="#1d4e89">入院時 SARC-CalF 篩檢</text>
+  <text x="310" y="166" text-anchor="middle" class="s">（入院 48 小時內，T1）</text>
+  <text x="70" y="215" class="t">• SARC-F 問卷 5 題（0–10 分）</text>
+  <text x="90" y="245" class="s">肌力、行走、起身、爬樓梯、跌倒</text>
+  <text x="70" y="290" class="t">• 小腿圍</text>
+  <text x="90" y="320" class="s">男 &lt;34 cm、女 &lt;33 cm → 加 10 分</text>
+  <text x="70" y="365" class="t">• 總分 0–20 分</text>
+  <rect x="70" y="395" width="225" height="54" rx="27" fill="#1d4e89"/>
+  <text x="182" y="430" text-anchor="middle" font-size="22" font-weight="700" fill="#fff">陽性（≥11 分）</text>
+  <rect x="325" y="395" width="225" height="54" rx="27" fill="#fff" stroke="#1d4e89" stroke-width="2.5"/>
+  <text x="437" y="430" text-anchor="middle" font-size="22" font-weight="700" fill="#1d4e89">陰性（&lt;11 分）</text>
+
+  <!-- ===== 依變項 ===== -->
+  <rect x="1020" y="30" width="540" height="450" rx="14" fill="#eef7f3" stroke="#1b6b4f" stroke-width="3"/>
+  <rect x="1020" y="30" width="540" height="62" rx="14" fill="#1b6b4f"/>
+  <rect x="1020" y="70" width="540" height="22" fill="#1b6b4f"/>
+  <text x="1290" y="72" text-anchor="middle" class="h">依變項</text>
+  <text x="1290" y="135" text-anchor="middle" class="sub" fill="#1b6b4f">住院期間日常生活功能</text>
+  <text x="1290" y="166" text-anchor="middle" class="s">（巴氏量表 Barthel Index，0–100 分）</text>
+  <text x="1050" y="212" class="lab">主要結果</text>
+  <text x="1050" y="246" class="t">• 住院相關失能（HAD）</text>
+  <text x="1070" y="276" class="s">出院時（T2）較入院前 2 週（T0）下降 ≥5 分</text>
+  <line x1="1050" y1="300" x2="1530" y2="300" stroke="#9fc9b6" stroke-width="1.5"/>
+  <text x="1050" y="335" class="lab">次要結果</text>
+  <text x="1050" y="370" class="t">• 入院至出院巴氏量表變化</text>
+  <text x="1050" y="405" class="t">• 住院天數、住院中跌倒</text>
+  <text x="1050" y="440" class="t">• 出院去向、30 天再入院、住院死亡</text>
+
+  <!-- ===== 主箭頭 ===== -->
+  <line x1="584" y1="255" x2="1012" y2="255" stroke="#1f2933" stroke-width="5" marker-end="url(#ar)"/>
+  <text x="798" y="232" text-anchor="middle" class="lab">H1：兩者具相關性</text>
+  <text x="798" y="292" text-anchor="middle" font-size="19" fill="#3e4c59">H2：控制干擾因子後</text>
+  <text x="798" y="318" text-anchor="middle" font-size="19" fill="#3e4c59">仍為獨立危險因子</text>
+  <text x="798" y="350" text-anchor="middle" font-size="17" fill="#52606d">（邏輯斯迴歸、ROC 曲線）</text>
+
+  <!-- ===== 控制變項 ===== -->
+  <rect x="140" y="560" width="1320" height="330" rx="14" fill="#f5f7fa" stroke="#52606d" stroke-width="3" stroke-dasharray="12 7"/>
+  <rect x="140" y="560" width="1320" height="58" rx="14" fill="#52606d"/>
+  <rect x="140" y="596" width="1320" height="22" fill="#52606d"/>
+  <text x="800" y="600" text-anchor="middle" class="h">控制變項（干擾因子）</text>
+
+  <g transform="translate(180,665)">
+    <text class="lab" fill="#1f2933">人口學</text>
+    <text y="42" class="t">年齡 ★</text>
+    <text y="78" class="t">性別</text>
+    <text y="114" class="t">BMI</text>
+    <text y="150" class="t">居住狀況</text>
+  </g>
+  <g transform="translate(490,665)">
+    <text class="lab">疾病特性</text>
+    <text y="42" class="t">Charlson 共病指數 ★</text>
+    <text y="78" class="t">入院診斷（感染／非感染）★</text>
+    <text y="114" class="t">透析年資</text>
+    <text y="150" class="t">糖尿病</text>
+  </g>
+  <g transform="translate(870,665)">
+    <text class="lab">檢驗值</text>
+    <text y="42" class="t">白蛋白 ★</text>
+    <text y="78" class="t">血紅素</text>
+    <text y="114" class="t">CRP</text>
+  </g>
+  <g transform="translate(1115,665)">
+    <text class="lab">住院過程</text>
+    <text y="42" class="t">譫妄（CAM）★</text>
+    <text y="78" class="t">約束使用</text>
+    <text y="114" class="t">臥床天數</text>
+    <text y="150" class="t">照會復健</text>
+  </g>
+  <line x1="455" y1="650" x2="455" y2="860" stroke="#cbd2d9" stroke-width="1.5"/>
+  <line x1="835" y1="650" x2="835" y2="860" stroke="#cbd2d9" stroke-width="1.5"/>
+  <line x1="1085" y1="650" x2="1085" y2="860" stroke="#cbd2d9" stroke-width="1.5"/>
+
+  <!-- 控制變項 → 主箭頭（校正） -->
+  <line x1="800" y1="556" x2="800" y2="372" stroke="#52606d" stroke-width="3.5" stroke-dasharray="10 7" marker-end="url(#arg)"/>
+  <rect x="820" y="440" width="110" height="40" rx="6" fill="#fff"/>
+  <text x="826" y="469" font-size="21" font-weight="700" fill="#52606d">統計校正</text>
+
+  <!-- ===== 時間軸 ===== -->
+  <g transform="translate(0,945)">
+    <line x1="120" y1="40" x2="1480" y2="40" stroke="#9aa5b1" stroke-width="3" marker-end="url(#arg)"/>
+    <g font-size="19" text-anchor="middle" fill="#1f2933">
+      <circle cx="200" cy="40" r="10" fill="#1b6b4f"/>
+      <text x="200" y="80" font-weight="700">T0 入院前 2 週</text><text x="200" y="106" fill="#52606d">巴氏量表（回溯）</text>
+      <circle cx="520" cy="40" r="10" fill="#1d4e89"/>
+      <text x="520" y="80" font-weight="700">T1 入院 48 小時內</text><text x="520" y="106" fill="#52606d">SARC-CalF、巴氏量表</text>
+      <circle cx="840" cy="40" r="10" fill="#52606d"/>
+      <text x="840" y="80" font-weight="700">住院期間</text><text x="840" y="106" fill="#52606d">譫妄、約束、跌倒</text>
+      <circle cx="1140" cy="40" r="10" fill="#1b6b4f"/>
+      <text x="1140" y="80" font-weight="700">T2 出院前 24 小時</text><text x="1140" y="106" fill="#52606d">巴氏量表、出院去向</text>
+      <circle cx="1400" cy="40" r="10" fill="#9aa5b1"/>
+      <text x="1400" y="80" font-weight="700">出院後 30 天</text><text x="1400" y="106" fill="#52606d">再入院、死亡</text>
+    </g>
+    <text x="40" y="47" font-size="19" font-weight="700" fill="#52606d">時程</text>
+  </g>
+
+  <!-- 圖例 -->
+  <text x="140" y="922" font-size="18" fill="#3e4c59">★ 納入多變項邏輯斯迴歸模型（含 SARC-CalF 共 6 個參數）　　實線箭頭：研究假設　　虛線箭頭：統計校正</text>
+</svg>
+</body></html>

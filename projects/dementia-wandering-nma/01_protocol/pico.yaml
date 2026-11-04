@@ -1,0 +1,66 @@
+# PICO for dementia-wandering-nma (meta-pipe format)
+population:
+  description: "People with a diagnosis of dementia of any type and severity"
+  age_range: "No restriction (mean age expected >=65 years)"
+  condition: "Dementia (Alzheimer's, vascular, Lewy body, frontotemporal, mixed, unspecified); mixed samples eligible if >=80% have dementia"
+  setting: "Community/home, nursing home/long-term care, hospital wards"
+intervention:
+  description: "Any non-pharmacological intervention aimed at preventing or reducing wandering"
+  nodes:
+    ENV: "Environmental modification (visual barriers, camouflaged exits, floor grids, signage, safe wandering paths)"
+    TECH: "Assistive/monitoring technology (GPS tracking, door alarms, exit sensors)"
+    EXER: "Physical activity / structured walking program"
+    SENS: "Sensory-based therapy (music, multisensory, aromatherapy, bright light)"
+    PSY: "Psychosocial/behavioral (person-centred care, structured activities, doll therapy, reminiscence)"
+    CG: "Caregiver education / training"
+    MULTI: "Multicomponent (>=2 of the above)"
+comparison:
+  description: "Usual care, waitlist, attention control, or another node above"
+  reference_node: "UC (usual care)"
+outcomes:
+  primary:
+    - name: "Wandering frequency/severity"
+      type: "continuous"
+      instruments: ["NPI aberrant motor behavior subscale", "CMAI wandering/pacing items", "RAWS", "direct observation counts"]
+      effect_measure: "SMD (Hedges' g)"
+  secondary:
+    - name: "Getting lost / elopement / exit-seeking events"
+      type: "dichotomous or count"
+      effect_measure: "RR or rate ratio"
+    - name: "Falls"
+      type: "dichotomous"
+      effect_measure: "RR"
+    - name: "Agitation (CMAI total)"
+      type: "continuous"
+      effect_measure: "SMD"
+    - name: "Caregiver burden (ZBI)"
+      type: "continuous"
+      effect_measure: "SMD"
+    - name: "Quality of life (QoL-AD)"
+      type: "continuous"
+      effect_measure: "SMD"
+    - name: "Physical restraint use"
+      type: "dichotomous"
+      effect_measure: "RR"
+setting:
+  timeframe: "Database inception to search date"
+  geography: "No restriction"
+  language: "English and Chinese (Traditional/Simplified)"
+study_types:
+  include:
+    - "Randomized controlled trials (individual or cluster)"
+    - "Crossover RCTs (first-period data only if carry-over likely)"
+  plan_b_include:
+    - "Non-randomized controlled / quasi-experimental studies (only if Plan B triggered; analyzed separately)"
+  exclude:
+    - "Single-arm pre-post studies"
+    - "Case reports, qualitative studies, reviews, protocols, conference abstracts without data"
+    - "Pharmacological interventions"
+analysis_type:
+  preliminary: "nma_candidate"
+  confirmed: ""
+  confirmation_stage: ""
+  rationale: ">=3 intervention nodes plus usual care; NMA only if network is connected and >=10 RCTs report the primary outcome"
+  single_arm_proportion: "moderate (many pre-post studies expected; excluded)"
+  transitivity_plausible: "uncertain (settings and dementia severity differ)"
+  network_connected: "unknown"

@@ -1,0 +1,45 @@
+# Search Queries — Non-pharmacological interventions for wandering in dementia (NMA)
+# Project: dementia-wandering-nma
+# Round: 01
+# Date: 2026-11-03
+# Structure: [Dementia] AND [Wandering] AND [RCT filter]   (intervention block intentionally omitted to maximise sensitivity)
+
+================================================================================
+DATABASE 1: PubMed/MEDLINE
+================================================================================
+
+("Dementia"[MeSH] OR "Alzheimer Disease"[MeSH] OR dementia[tiab] OR alzheimer*[tiab] OR "cognitive impairment"[tiab] OR "cognitively impaired"[tiab])
+AND
+("Wandering Behavior"[MeSH] OR wander*[tiab] OR elopement[tiab] OR "exit seeking"[tiab] OR "exit-seeking"[tiab] OR "getting lost"[tiab] OR "going missing"[tiab] OR pacing[tiab] OR "aberrant motor"[tiab] OR "motor disturbance"[tiab] OR "aimless walking"[tiab])
+AND
+("randomized controlled trial"[pt] OR "controlled clinical trial"[pt] OR randomized[tiab] OR randomised[tiab] OR randomly[tiab] OR trial[tiab])
+NOT
+("animals"[MeSH] NOT "humans"[MeSH])
+
+# Feasibility run 2026-11-03 (simplified version without wildcards): 55 records
+
+================================================================================
+DATABASE 2: Scopus
+================================================================================
+
+TITLE-ABS-KEY((dementia OR alzheimer*) AND (wander* OR elopement OR "exit seeking" OR "getting lost" OR pacing OR "aberrant motor") AND (random* OR trial))
+
+================================================================================
+DATABASE 3: CINAHL (EBSCOhost)
+================================================================================
+
+(MH "Dementia+" OR TI dementia OR AB dementia OR TI alzheimer* OR AB alzheimer*)
+AND (MH "Wandering Behavior" OR TI wander* OR AB wander* OR TI elopement OR AB elopement OR TI "exit seeking" OR AB "exit seeking" OR TI pacing OR AB pacing)
+AND (MH "Randomized Controlled Trials" OR TI random* OR AB random* OR TI trial OR AB trial)
+
+================================================================================
+DATABASE 4: Cochrane CENTRAL
+================================================================================
+
+(dementia OR alzheimer*):ti,ab,kw AND (wander* OR elopement OR "exit seeking" OR "getting lost" OR pacing):ti,ab,kw
+
+================================================================================
+DATABASE 5: 華藝 Airiti Library（中文）
+================================================================================
+
+(失智 OR 失智症 OR 阿茲海默) AND (遊走 OR 走失 OR 徘徊 OR 漫遊)
